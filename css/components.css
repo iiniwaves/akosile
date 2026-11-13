@@ -92,12 +92,13 @@
 .menu__item kbd { font: 400 10px/1 var(--font-mono); color: var(--text-tertiary); }
 
 /* ---------- Toast ---------- */
-.toast-host { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 60; display: grid; gap: 8px; }
+.toast-host { position: fixed; left: calc(50% + var(--sidebar-width) / 2); bottom: 24px; transition: bottom .15s; transform: translateX(-50%); z-index: 60; display: grid; gap: 8px; }
 .toast {
   display: flex; align-items: center; gap: 16px; padding: 8px 8px 8px 14px; border-radius: var(--radius-lg);
   background: var(--bg-inverse); color: var(--text-inverse); font: 400 12px/1.3 var(--font-sans);
   box-shadow: var(--shadow-popover); animation: toast-in .18s ease-out;
 }
+.has-approve-bar .toast-host { bottom: 96px; }
 .toast .btn { padding: 5px 10px; border-color: var(--white); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 

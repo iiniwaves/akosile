@@ -30,13 +30,13 @@ js/views/             one file per screen
 js/data.js            scripted receipts
 js/icons.js           Lucide icons
 assets/               fonts, logo, receipt thumbnail
-design-system/        SKILL.md, the design system written down for building screens
+design-system/        DESIGN_SYSTEM.md: tokens, type, components and copy rules
 ```
 
 ## Stages
 
 1. Tokens, app shell and the Inbox (done)
-2. Upload, reading and adding a record without a receipt
+2. Upload, reading and adding a record without a receipt (done)
 3. Review, source highlight, edit and undo, learning and approval
 4. When reading goes wrong: partial read, couldn't read, enter it yourself, not a receipt, duplicate, taking too long
 5. Reports: submit, year, month and a submitted report

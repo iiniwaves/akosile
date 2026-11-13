@@ -1,8 +1,3 @@
----
-name: akosile-design-system
-description: Use when designing or coding any Akọsílẹ̀ screen, component or copy (Figma or HTML/CSS/JS demo). Holds the tokens, type, components, layout, behaviour rules and voice.
----
-
 # Akọsílẹ̀ design system
 
 Akọsílẹ̀ is an AI receipt and invoice extractor for small Nigerian businesses. The AI reads receipts, a person checks and approves them, and approved receipts go into monthly expense reports. The design work is about how the AI behaves when it is sure, unsure, wrong or unable to read.
@@ -46,7 +41,7 @@ Every colour has one job. Build with semantic tokens, never raw hex.
 
 Rules:
 - **Marker yellow** appears only on a receipt or document, only where the AI read something. Never on buttons, badges, search matches or guesses. Exceptions: the logo box and the assistant mark (they are the brand).
-- **Cobalt** means only one thing: the AI is reading right now (the caret, the Reading badge, capture corners). Not for links or buttons.
+- **Cobalt** means only one thing: the AI is reading right now (the caret and the Reading badge). Not for links or buttons.
 - **Actions, focus and selection are ink.** No blue buttons.
 - **Badges are solid**, full-strength fill, white or ink text. No tints, no dots, 6px radius.
 - **Flags** are a 1.5px amber outline (radius 3 on amounts, radius 8 on fields). Not dashed.
@@ -133,10 +128,3 @@ Lucide, 24px grid, 2px stroke, round caps and joins. Used at 14px in buttons, 15
 ## Never
 
 Show a confidence number. Draw a source box for a guessed value. Overwrite a user's edit. Let the AI approve, submit or delete. Let one failed receipt block the batch. Use yellow outside documents and the brand. Use cobalt for anything but reading. Use dashed borders in hi-fi (dashes are wireframe only). Type the product name in Sora.
-
-## Building the demo (HTML/CSS/JS)
-
-- Static site, no build step: `index.html`, `css/tokens.css`, `css/base.css`, `css/components.css`, `js/` ES modules. Fonts self-hosted in `assets/fonts` (Sora 400/600, Geist Mono 400/500, latin + latin-ext so ₦ renders).
-- Tokens live only in `tokens.css` as CSS custom properties named as above. Components never use raw hex.
-- Scripted data in `js/data.js` (receipts with fields, state per field, bounding boxes as % of the receipt, reason lines, alternatives). Processing is simulated with 0.8–2s staggered delays. State is in memory with a Reset demo control.
-- Match the Hi-fi frames at 1280×800 pixel for pixel; compare with a screenshot before calling a screen done.
