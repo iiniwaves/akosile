@@ -139,7 +139,7 @@ export const documents = {
     lines: [
       { kind: "title", text: "Uber", src: "vendor" },
       { left: "Trip to Yaba" },
-      { left: "20 Nov 2026  18:05", src: "date" },
+      { left: "14 Nov 2026  18:05", src: "date" },
       { kind: "divider" },
       { left: "Trip fare", right: "14,550.00" },
       { left: "Booking fee", right: "2,400.00" },
@@ -149,7 +149,7 @@ export const documents = {
     ],
     fields: {
       vendor: { value: "Uber", state: "ready" },
-      date: { value: "20 Nov 2026", state: "ready" },
+      date: { value: "14 Nov 2026", state: "ready" },
       total: { value: 16950, state: "ready" },
       category: { value: "Travel", state: "guessed" },
     },
@@ -283,7 +283,7 @@ export const rereads = {
 };
 
 export const nextUber = {
-  id: "uber-20", vendor: "Uber", place: "Trip to Yaba", date: "20 Nov 2026",
+  id: "uber-20", vendor: "Uber", place: "Trip to Yaba", date: "14 Nov 2026",
   category: "Travel", total: 16950, status: "ready", readMs: 1400,
 };
 

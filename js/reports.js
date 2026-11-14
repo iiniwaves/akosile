@@ -36,8 +36,6 @@ export const sampleReports = [
   { id: `${YEAR}-11-ko`, month: 10, person: "KO", title: "Office supplies run", count: 8, total: 42150, status: "draft", when: "13 Nov", at: `13 Nov ${YEAR} at 10:25` },
 ];
 
-// Spend by category for everything except Ada's November report, which is added from what you submit.
-export const sampleCategories = { Meals: 1255836, Transport: 876504, Fuel: 674785, Groceries: 498057, "Office supplies": 373543, Other: 207525 };
 export const sampleEnteredByHand = 9;
 
 // Receipts inside the sample reports, made up the same way every time so the pages stay stable.
@@ -46,23 +44,29 @@ const VENDORS = {
   TA: [["Total Energies", "Fuel"], ["Bolt", "Transport"], ["Uber", "Transport"], ["Mama Put, Yaba", "Meals"], ["Shell", "Fuel"], ["Chowdeck", "Meals"]],
   KO: [["Jumia", "Office supplies"], ["Konga", "Office supplies"], ["Spar", "Groceries"], ["Shoprite", "Groceries"], ["Printing Plus", "Other"]],
 };
+export const PLACES = {
+  "Café Neo": "Lekki Phase 1", "Chicken Republic": "Admiralty Way, Lekki", Uber: "Trip to Ikeja", Bolt: "Trip to Yaba", Shell: "Admiralty Way",
+  Spar: "Lekki Phase 1", "The Yellow Chilli": "Victoria Island", "Total Energies": "Ikorodu Road", "Mama Put, Yaba": "Yaba", Chowdeck: "Delivery",
+  Jumia: "Online order", Konga: "Online order", Shoprite: "Lekki Mall", "Printing Plus": "Ikeja",
+};
 const SOURCES = ["Read", "Read", "Read", "Read", "Read, total confirmed", "Read, total edited", "Read, team rule"];
 
 export function sampleReceipts(report) {
   let seed = [...report.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
   const pool = VENDORS[report.person];
-  const weights = Array.from({ length: report.count }, () => 0.4 + rand());
+  const SIZE = { Fuel: 1.2, Meals: 1.4, Transport: 1.25, Groceries: 1.5, "Office supplies": 4.5, Other: 4 };
+  const picks = Array.from({ length: report.count }, () => pool[Math.floor(rand() * pool.length)]);
+  const weights = picks.map(([, cat]) => SIZE[cat] * (0.6 + 0.8 * rand()));
   const sum = weights.reduce((a, b) => a + b, 0);
   let left = report.total;
-  return weights.map((w, i) => {
-    const [vendor, category] = pool[Math.floor(rand() * pool.length)];
-    const amount = i === report.count - 1 ? left : Math.max(50, Math.round((report.total * w) / sum / 50) * 50);
+  const last = Math.min(28, Number(report.when.split(" ")[0]));
+  return picks.map(([vendor, category], i) => {
+    const amount = i === report.count - 1 ? left : Math.max(50, Math.round((report.total * weights[i]) / sum / 50) * 50);
     left -= amount;
-    const last = report.month === 10 ? 13 : 28;
     return {
-      id: `${report.id}-${i}`, vendor, category, total: amount,
-      day: 1 + Math.floor((rand() * last * (i + 1)) / report.count) % last,
+      id: `${report.id}-${i}`, vendor, place: PLACES[vendor], category, total: amount,
+      day: Math.min(last, 1 + Math.floor(((i + rand()) * last) / report.count)),
       source: SOURCES[Math.floor(rand() * SOURCES.length)],
     };
   }).sort((a, b) => a.day - b.day);

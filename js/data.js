@@ -34,8 +34,18 @@ export const secondBatch = [
 ];
 
 // Rules the team saved before the demo starts.
+// used is how many receipts each rule filled in before the demo started.
 export const seedRules = [
-  { vendor: "Spar", field: "category", value: "Groceries", by: "Kemi", on: "2 Nov" },
+  { vendor: "Total Energies", field: "category", value: "Fuel", by: "Tunde", on: "4 Nov", used: 6 },
+  { vendor: "Spar", field: "category", value: "Groceries", by: "Kemi", on: "2 Nov", used: 4 },
+  { vendor: "Jumia", field: "category", value: "Office supplies", by: "Kemi", on: "28 Oct", used: 9 },
+];
+
+export const people = [
+  { initials: "AB", name: "Ada Bello", detail: "You", role: "Admin", locked: true },
+  { initials: "TA", name: "Tunde Ade", detail: "Field team", role: "Member" },
+  { initials: "KO", name: "Kemi Ojo", detail: "Office", role: "Member" },
+  { initials: "BL", name: "Bisi Lawal", detail: "Invited, hasn't joined yet", role: "Member" },
 ];
 
 export const categories = ["Meals", "Transport", "Fuel", "Travel", "Groceries", "Office supplies", "Other"];

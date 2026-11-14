@@ -26,6 +26,8 @@ css/components.css    buttons, badges, checkbox, keycap, menu, toast
 css/layout.css        sidebar, main area, tables, approve bar
 css/review.css        receipt, fields, history and the learning prompt
 css/reports.css       reports, charts and the submit dialog
+css/workspace.css     learned rules and settings
+css/assistant.css     search, the record keeper and the inbox filter
 js/app.js             state and routing
 js/shell.js           sidebar: workspace, search, ask, nav, collapse, profile menu
 js/views/             one file per screen
@@ -33,6 +35,7 @@ js/data.js            the scripted batch, workspace and people
 js/receipts.js        what was read from each receipt, line by line
 js/reports.js         sample reports for the year and the team
 js/datepicker.js      the calendar used by every date field
+js/assistant.js       how the record keeper works out its answers
 js/icons.js           Lucide icons
 assets/               fonts, logo, receipt thumbnail
 design-system/        DESIGN_SYSTEM.md: tokens, type, components and copy rules
@@ -45,7 +48,11 @@ design-system/        DESIGN_SYSTEM.md: tokens, type, components and copy rules
 3. Review, source highlight, edit and undo, learning and approval (done)
 4. When reading goes wrong: partial read, couldn't read, enter it yourself, not a receipt, duplicate, taking too long (done)
 5. Reports: submit, year, month and a submitted report (done)
-6. Search, ask the record keeper, learned rules and settings
+6. Search, ask the record keeper, learned rules and settings (done)
+
+## Shortcuts
+
+Press / to search and Cmd+K (Ctrl+K on Windows) to ask the record keeper, from any screen.
 
 ## Credits
 

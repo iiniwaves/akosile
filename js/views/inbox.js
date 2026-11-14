@@ -7,7 +7,11 @@ import { setCount } from "../shell.js";
 const canBulkApprove = (r, state) => r.status === "ready" && !state.reading.has(r.id);
 
 export function renderInbox(root, state) {
-  const { receipts } = state;
+  const all = state.receipts;
+  // A filter from the assistant is always labelled with the question it came from, and one tap clears it.
+  const filter = state.inboxFilter && all.some((r) => state.inboxFilter.ids.includes(r.id)) ? state.inboxFilter : null;
+  if (!filter) state.inboxFilter = null;
+  const receipts = filter ? all.filter((r) => filter.ids.includes(r.id)) : all;
   const isReading = receipts.some((r) => r.batch === state.batchNo && state.reading.has(r.id) && !r.lateArrival && !r.fileLabel && !r.retried);
   const slow = receipts.filter((r) => r.slow);
   const anyApproved = receipts.some((r) => r.status === "approved");
@@ -25,7 +29,15 @@ export function renderInbox(root, state) {
       </div>
     </header>
 
-    ${isReading ? progressCard(state) : slow.length ? slow.map(slowBanner).join("") : summaryCard(state)}
+    ${filter ? `
+    <div class="filter-bar">
+      <span class="filter-chip"><span class="ask-mark ask-mark--16"></span><span>From your question: ${escapeHtml(filter.label)}</span><button type="button" class="filter-chip__clear" data-action="clear-filter" aria-label="Clear filter">${icon("x", 14)}</button></span>
+      <span class="filter-bar__count">Showing ${receipts.length} of ${all.length}</span>
+    </div>
+    <section class="card summary" aria-live="polite">
+      <h2>${plural(receipts.length, "receipt")}, ${naira(receipts.reduce((t, r) => t + (r.total || 0), 0))}</h2>
+      <p>${escapeHtml(filter.desc)}. ${plural(all.length - receipts.length, "other receipt")} ${all.length - receipts.length === 1 ? "is" : "are"} hidden by this filter.</p>
+    </section>` : isReading ? progressCard(state) : slow.length ? slow.map(slowBanner).join("") : summaryCard(state)}
 
     <section class="card table table--inbox" role="table" aria-label="Receipts">
       <div class="table__row table__head" role="row">
@@ -51,7 +63,7 @@ export function renderInbox(root, state) {
     </div>
   `;
 
-  setCount("inbox", receipts.filter((r) => r.status !== "approved").length || "");
+  setCount("inbox", all.filter((r) => r.status !== "approved").length || "");
   syncSelection(root, state);
 
   root.onchange = (e) => {
@@ -88,6 +100,7 @@ export function renderInbox(root, state) {
     }
     if (btn.dataset.action === "problem") { state.queue = null; location.hash = `#/review/${id}`; }
     if (btn.dataset.action === "retry") state.actions.retry(id);
+    if (btn.dataset.action === "clear-filter") { state.inboxFilter = null; renderInbox(root, state); }
     // With receipts already here, new files join the list. The empty upload screen is only for a first upload.
     if (btn.dataset.action === "upload") pickFile(() => state.actions.upload());
     if (btn.dataset.action === "open") {
@@ -233,8 +246,10 @@ function row(r, state) {
 }
 
 function syncSelection(root, state) {
-  const picked = state.receipts.filter((r) => state.selected.has(r.id));
-  const eligible = state.receipts.filter((r) => canBulkApprove(r, state));
+  const pool = state.inboxFilter ? state.receipts.filter((r) => state.inboxFilter.ids.includes(r.id)) : state.receipts;
+  // With a filter on, only what's on screen counts. Nothing hidden gets approved.
+  const picked = pool.filter((r) => state.selected.has(r.id));
+  const eligible = pool.filter((r) => canBulkApprove(r, state));
   const bar = $("[data-approve-bar]", root);
   const all = $("[data-select-all]", root);
 
@@ -257,10 +272,10 @@ function syncSelection(root, state) {
 
 // Bulk approval is reversible until the report is submitted. The toast is a shortcut, not the only way back.
 function approveSelected(root, state) {
-  const ids = [...state.selected];
+  const pool = state.inboxFilter ? state.receipts.filter((r) => state.inboxFilter.ids.includes(r.id)) : state.receipts;
+  const ids = pool.filter((r) => state.selected.has(r.id)).map((r) => r.id);
   if (!ids.length) return;
-  ids.forEach((id) => { state.receipts.find((r) => r.id === id).status = "approved"; });
-  state.selected.clear();
+  ids.forEach((id) => { state.receipts.find((r) => r.id === id).status = "approved"; state.selected.delete(id); });
   renderInbox(root, state);
   toast(`Approved ${plural(ids.length, "receipt")}.`, {
     undo: () => {

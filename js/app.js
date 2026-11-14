@@ -9,6 +9,10 @@ import { CURRENT_MONTH, PEOPLE } from "./reports.js";
 import { sampleBatch, secondBatch, seedRules, workspace, me } from "./data.js";
 import { documents, rereads, nextUber, FIELD_LABEL } from "./receipts.js";
 import { toast } from "./ui.js";
+import { renderRules } from "./views/rules.js";
+import { renderSettings } from "./views/settings.js";
+import { openSearch, closeSearch, searchOpen } from "./views/search.js";
+import { openAssistant, closeAssistant, assistantOpen } from "./views/assistant.js";
 import { escapeHtml } from "./format.js";
 
 // In-memory demo state. A reload starts the demo again.
@@ -37,6 +41,22 @@ function ruleText(rule) {
 const app = document.getElementById("app");
 app.innerHTML = `${renderSidebar({ inbox: "", rules: 0 })}<main class="main" id="main" tabindex="-1"></main>`;
 bindSidebar(app);
+
+// Search and the record keeper open from the sidebar or the keyboard, on any screen.
+const ask = (question) => { closeSearch(); openAssistant(state, question); };
+const search = (query = "") => openSearch(state, { query, onAsk: ask });
+app.addEventListener("click", (e) => {
+  const a = e.target.closest('.sidebar [data-action="search"], .sidebar [data-action="ask"]');
+  if (!a) return;
+  if (a.dataset.action === "search") search();
+  else if (assistantOpen()) closeAssistant();
+  else ask();
+});
+document.addEventListener("keydown", (e) => {
+  const typing = e.target.closest?.("input, textarea, select, [contenteditable]");
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (assistantOpen()) closeAssistant(); else ask(); }
+  else if (e.key === "/" && !typing && !searchOpen()) { e.preventDefault(); search(); }
+});
 const main = document.getElementById("main");
 
 const currentPath = () => location.hash.replace(/^#\//, "") || "inbox";
@@ -201,6 +221,14 @@ function submitReport() {
   toast(`${report.title} submitted.`, { duration: 3000 });
 }
 
+// Renaming the workspace shows everywhere its name is used.
+function onRename(name) {
+  state.workspaceName = name;
+  document.querySelectorAll(".ws__name").forEach((el) => (el.textContent = name));
+  document.querySelector(".ws")?.setAttribute("aria-label", `Workspace: ${name}`);
+  route();
+}
+
 function updateInboxCount() {
   setCount("inbox", state.receipts.filter((r) => r.status !== "approved").length || "");
 }
@@ -314,6 +342,8 @@ const hooks = {
 const routes = [
   [/^inbox$/, () => (state.receipts.length || state.lastReport ? renderInbox(main, state) : renderUpload(main, { onFiles: upload }))],
   [/^reports$/, () => renderYear(main, state)],
+  [/^rules$/, () => renderRules(main, state, { onSee: (vendor) => search(vendor) })],
+  [/^settings$/, () => renderSettings(main, state, { onRename })],
   [/^reports\/2026-(\d\d)$/, (m) => renderMonth(main, state, Number(m[1]) - 1)],
   [/^reports\/2026-(\d\d)\/([\w-]+)$/, (m) => renderReport(main, state, Number(m[1]) - 1, m[2])],
   [/^inbox\/upload$/, () => renderUpload(main, { onFiles: upload })],

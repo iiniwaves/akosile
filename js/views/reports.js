@@ -1,7 +1,7 @@
 import { icon } from "../icons.js";
 import { naira, escapeHtml, plural } from "../format.js";
 import { button, toast, backTitle } from "../ui.js";
-import { YEAR, CURRENT_MONTH, MONTHS, MONTH_SHORT, PEOPLE, sampleReports, sampleCategories, sampleEnteredByHand, sampleReceipts } from "../reports.js";
+import { YEAR, CURRENT_MONTH, MONTHS, MONTH_SHORT, PEOPLE, sampleReports, sampleEnteredByHand, sampleReceipts } from "../reports.js";
 import { FIELD_LABEL } from "../receipts.js";
 
 // Reports: a year, a month, one report. Only a person submits, and every report says
@@ -58,7 +58,9 @@ export function renderYear(root, state) {
   const current = reportsIn(state, CURRENT_MONTH);
   const drafts = current.filter((r) => r.status === "draft").length;
 
-  const cats = { ...sampleCategories };
+  // Spend by category, worked out from every receipt in every report this year.
+  const cats = {};
+  for (const rep of sampleReports) for (const i of sampleReceipts(rep)) cats[i.category] = (cats[i.category] || 0) + i.total;
   for (const rep of state.myReports) for (const i of rep.items) cats[i.category || "Other"] = (cats[i.category || "Other"] || 0) + i.total;
   const catTotal = Object.values(cats).reduce((a, b) => a + b, 0);
   const catRows = Object.entries(cats).map(([name, v]) => ({ name, pct: Math.round((v / catTotal) * 100) })).filter((c) => c.pct > 0).sort((a, b) => b.pct - a.pct);
