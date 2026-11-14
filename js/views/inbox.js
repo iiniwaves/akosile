@@ -1,6 +1,6 @@
 import { icon } from "../icons.js";
 import { naira, escapeHtml, plural } from "../format.js";
-import { badge, button, toast, $, $$ } from "../ui.js";
+import { badge, button, toast, pickFile, $, $$ } from "../ui.js";
 import { setCount } from "../shell.js";
 
 // A receipt can be bulk approved only when it's Ready. Flagged vendor, date or total stays out.
@@ -8,7 +8,9 @@ const canBulkApprove = (r, state) => r.status === "ready" && !state.reading.has(
 
 export function renderInbox(root, state) {
   const { receipts } = state;
-  const isReading = state.reading.size > 0;
+  const isReading = receipts.some((r) => r.batch === state.batchNo && state.reading.has(r.id) && !r.lateArrival && !r.fileLabel && !r.retried);
+  const slow = receipts.filter((r) => r.slow);
+  const anyApproved = receipts.some((r) => r.status === "approved");
 
   root.innerHTML = `
     <header class="page-head">
@@ -18,11 +20,12 @@ export function renderInbox(root, state) {
       </div>
       <div class="page-head__actions">
         ${button({ label: "Add without a receipt", iconName: "pen", attrs: 'data-href="#/inbox/new"' })}
-        ${button({ label: "Upload receipts", iconName: "upload", variant: "primary", attrs: 'data-href="#/inbox/upload"' })}
+        ${button({ label: "Upload receipts", iconName: "upload", variant: anyApproved ? "" : "primary", attrs: 'data-action="upload"' })}
+        ${anyApproved ? button({ label: "Submit report", iconName: "send", variant: "primary", attrs: 'data-action="submit"' }) : ""}
       </div>
     </header>
 
-    ${isReading ? progressCard(state) : summaryCard(state)}
+    ${isReading ? progressCard(state) : slow.length ? slow.map(slowBanner).join("") : summaryCard(state)}
 
     <section class="card table table--inbox" role="table" aria-label="Receipts">
       <div class="table__row table__head" role="row">
@@ -68,23 +71,57 @@ export function renderInbox(root, state) {
   root.onclick = (e) => {
     const link = e.target.closest("[data-href]");
     if (link) { location.hash = link.dataset.href; return; }
-    const btn = e.target.closest("[data-action]");
+    let btn = e.target.closest("[data-action]");
+    // Clicking anywhere on a row opens that receipt, so every one can be looked at, even one that couldn't be read.
+    const rowEl = e.target.closest(".table__row[data-id]");
+    if (!btn && rowEl && !e.target.closest("input, label") && !rowEl.classList.contains("is-reading") && !rowEl.classList.contains("is-slow")) {
+      const r = receipts.find((x) => x.id === rowEl.dataset.id);
+      btn = r?.problem ? rowEl.querySelector('[data-action="problem"]') || { dataset: { action: "problem" }, closest: () => rowEl } : rowEl.querySelector('[data-action="review"], [data-action="open"]');
+    }
     if (!btn) return;
     if (btn.dataset.action === "approve") approveSelected(root, state);
-    if (["open", "review", "upload-again"].includes(btn.dataset.action)) {
-      toast("Reviewing receipts comes in the next stage of the demo.", { duration: 3000 });
+    const id = btn.closest("[data-id]")?.dataset.id;
+    if (id) delete state.reviewUi[id];
+    if (btn.dataset.action === "review") {
+      state.queue = { mode: "review", ids: receipts.filter((r) => r.status === "check" && !r.problem).map((r) => r.id) };
+      location.hash = `#/review/${id}`;
     }
+    if (btn.dataset.action === "problem") { state.queue = null; location.hash = `#/review/${id}`; }
+    if (btn.dataset.action === "retry") state.actions.retry(id);
+    // With receipts already here, new files join the list. The empty upload screen is only for a first upload.
+    if (btn.dataset.action === "upload") pickFile(() => state.actions.upload());
+    if (btn.dataset.action === "open") {
+      state.queue = null;
+      if (state.docs[id]) location.hash = `#/review/${id}`;
+      else toast("This record has no receipt to show.", { duration: 3000 });
+    }
+    if (btn.dataset.action === "upload-again") pickFile(() => state.actions.reread(id));
+    if (btn.dataset.action === "submit") toast("Submitting reports comes in a later stage of the demo.", { duration: 3000 });
   };
 }
 
 function summaryCard(state) {
   const { receipts } = state;
+  const approved = receipts.filter((r) => r.status === "approved");
+  if (approved.length) {
+    const left = receipts.length - approved.length;
+    const sum = approved.reduce((t, r) => t + (r.total || 0), 0);
+    return `
+    <section class="card summary" aria-live="polite">
+      <h2>${approved.length} approved, ${naira(sum)}</h2>
+      <p>${left ? `${plural(left, "receipt")} still need${left === 1 ? "s" : ""} you. ` : ""}Approvals can be undone until you submit the report.</p>
+    </section>`;
+  }
   const read = receipts.filter((r) => !r.manual).length;
-  const check = receipts.filter((r) => r.status === "check").length;
-  const failed = receipts.filter((r) => r.status === "failed").length;
+  const check = receipts.filter((r) => r.status === "check" && !r.problem).length;
+  const count = (p) => receipts.filter((r) => r.problem === p).length;
+  const one = (n, single, many) => (n ? (n === 1 ? single : many.replace("#", n)) : "");
   const line = [
     check ? `${check} need${check === 1 ? "s" : ""} a quick look before you can approve ${check === 1 ? "it" : "them"}.` : "",
-    failed ? `${failed === 1 ? "One photo was" : `${failed} photos were`} too blurry to read.` : "",
+    one(count("unreadable"), "One photo was too blurry to read.", "# photos were too blurry to read."),
+    one(count("partial"), "One is missing fields.", "# are missing fields."),
+    one(count("notReceipt"), "One isn't a receipt.", "# aren't receipts."),
+    one(count("duplicate"), "One looks like a copy.", "# look like copies."),
   ].filter(Boolean).join(" ") || "Everything here is ready to approve.";
   return `
     <section class="card summary" aria-live="polite">
@@ -94,7 +131,7 @@ function summaryCard(state) {
 }
 
 function progressCard(state) {
-  const batch = state.receipts.filter((r) => r.batch);
+  const batch = state.receipts.filter((r) => r.batch === state.batchNo);
   const done = batch.filter((r) => !state.reading.has(r.id)).length;
   const pct = batch.length ? (done / batch.length) * 100 : 0;
   return `
@@ -109,6 +146,18 @@ function progressCard(state) {
     </section>`;
 }
 
+// One slow file never blocks the rest. Say what's happening, that nothing is lost, and offer a way forward.
+function slowBanner(r) {
+  return `
+    <section class="banner" aria-live="polite">
+      <div class="banner__text">
+        <h2>${escapeHtml(r.vendor)} is taking longer than usual</h2>
+        <p>Your file is safe. The rest of your receipts are ready to use.</p>
+      </div>
+      <button type="button" class="btn" data-action="retry" data-id="${r.id}">${icon("retry", 14)}<span>Try again</span></button>
+    </section>`;
+}
+
 function row(r, state) {
   const reading = state.reading.has(r.id);
   const selected = state.selected.has(r.id);
@@ -117,9 +166,20 @@ function row(r, state) {
     ? `<span class="thumb thumb--none" title="No receipt"></span>`
     : `<img class="thumb" src="assets/receipt-thumb.svg" alt="" width="18" height="23">`;
 
+  if (r.slow) {
+    return `
+    <div class="table__row is-slow" role="row" data-id="${r.id}">
+      <input type="checkbox" class="check" disabled aria-label="${escapeHtml(r.vendor)} is still reading">
+      <div class="vendor">${thumb}<div class="vendor__text"><span class="vendor__name">${escapeHtml(r.vendor)}</span><span class="vendor__sub">Still reading</span></div></div>
+      <span>${empty(60)}</span><span>${empty(60)}</span><span>${empty(40)}</span>
+      <span><span class="tag tag--check">Taking a while</span></span>
+      <span class="center">${button({ label: "Try again", iconName: "retry", variant: "action", attrs: 'data-action="retry"' })}</span>
+    </div>`;
+  }
+
   if (reading) {
     return `
-    <div class="table__row" role="row" data-id="${r.id}">
+    <div class="table__row is-reading" role="row" data-id="${r.id}">
       <input type="checkbox" class="check" disabled aria-label="${escapeHtml(r.vendor)} is still reading">
       <div class="vendor">${thumb}<div class="vendor__text"><span class="vendor__name">${escapeHtml(r.fileLabel || r.vendor)}</span><span class="vendor__sub">Reading</span></div></div>
       <span>${empty(60)}</span><span>${empty(60)}</span><span>${empty(40)}</span>
@@ -131,6 +191,10 @@ function row(r, state) {
   const flagged = r.status === "check" && r.flagged?.includes("total");
   const eligible = canBulkApprove(r, state);
   const action = {
+    partial: { label: "Fill in", icon: "pen", key: "problem" },
+    notReceipt: { label: "Review", icon: "search", key: "problem" },
+    duplicate: { label: "Compare", icon: "copy", key: "problem" },
+  }[r.problem] || {
     ready: { label: "Open", icon: "eye", key: "open" },
     approved: { label: "Open", icon: "eye", key: "open" },
     check: { label: "Review", icon: "search", key: "review" },

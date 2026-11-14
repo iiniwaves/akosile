@@ -1,0 +1,130 @@
+/* ---------- Review: receipt on the left, what was read on the right ---------- */
+.doc-area--top { flex-direction: column; justify-content: flex-start; gap: 12px; overflow: auto; }
+.doc-caption { margin: 0; font: 400 10px/13px var(--font-sans); color: var(--text-secondary); }
+
+/* The receipt as printed. Marker yellow only ever appears here. */
+.rcpt {
+  width: 270px; flex: none; padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 5px;
+  background: var(--bg-surface); border: 1px solid var(--border-default); box-shadow: var(--shadow-document);
+}
+.rcpt__row { display: flex; }
+.rcpt__line {
+  flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 1px 0; border-radius: 3px;
+  font: 400 11px/14px var(--font-mono); color: var(--text-primary); white-space: pre;
+}
+.rcpt__row--fit .rcpt__line { flex: none; }
+.rcpt__line--title { font: 500 14px/18px var(--font-mono); }
+.rcpt__line--small { font-size: 13px; line-height: 17px; }
+.rcpt__line--total { font: 500 12px/16px var(--font-mono); }
+.rcpt__line--hand { font: 400 17px/22px "Instrument Serif", Georgia, serif; font-style: italic; }
+.rcpt__line.is-read { padding: 1px 3px; background: var(--evidence-soft); cursor: pointer; }
+.rcpt__line.is-read:hover { background: var(--evidence-full); }
+.rcpt__line.is-selected { padding: 1.5px 3.5px; background: var(--evidence-full); border: 1px solid var(--border-focus); box-shadow: inset 0 0 0 .5px var(--border-focus); }
+.rcpt__rule { width: 226px; height: 0; margin: 0; border: 0; border-top: 1px dashed var(--border-strong); }
+
+/* ---------- Fields ---------- */
+.fields-panel { overflow-y: auto; }
+.field {
+  display: grid; gap: 6px; padding: 9px 10px; border: 1px solid var(--border-default); border-radius: 7px;
+  background: var(--bg-surface); cursor: pointer; outline: none; transition: border-color .12s;
+}
+.field:hover { border-color: var(--border-strong); }
+.field:focus-visible { box-shadow: 0 0 0 2px var(--bg-surface), 0 0 0 4px var(--border-focus); }
+.field--check { border: 1px solid var(--status-check); box-shadow: inset 0 0 0 .5px var(--status-check); padding: 9.5px 10.5px; }
+.field--check:hover { border-color: var(--status-check); }
+.field.is-selected { border: 2px solid var(--border-focus); box-shadow: none; gap: 8px; cursor: default; }
+.field--check.is-selected.is-open { padding: 14px; gap: 12px; }
+.field__row { display: flex; align-items: center; gap: 10px; }
+.field__strip { width: 4px; height: 16px; flex: none; border-radius: 2px; }
+.field__strip.is-soft { background: var(--evidence-soft); }
+.field__strip.is-full { background: var(--evidence-full); }
+.field__strip.is-none { border: 1px dashed var(--border-strong); }
+.field__label { width: 64px; flex: none; font: 400 10px/13px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+.field__value { flex: 1; min-width: 0; font: 600 13px/16px var(--font-sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.field__value--mono { font: 500 13px/17px var(--font-mono); }
+.field__row .minput, .field__row .select { flex: 1; min-width: 0; }
+.field__meta { flex: none; font: 400 10px/13px var(--font-sans); color: var(--text-secondary); }
+.field__chev { width: 18px; height: 18px; flex: none; display: grid; place-items: center; color: var(--text-primary); }
+.field__reason { margin: 0; font: 400 11px/16px var(--font-sans); color: var(--text-primary); }
+.field__note { margin: 0; font: 400 11px/16px var(--font-sans); color: var(--text-secondary); }
+.field__actions { display: flex; align-items: center; gap: 8px; padding-top: 4px; flex-wrap: wrap; }
+.field__actions--small { padding-top: 0; }
+.field__actions--rule { gap: 16px; }
+.field__actions--edit { padding-top: 4px; }
+.field__saved { margin: 0; display: flex; align-items: center; gap: 6px; font: 400 11px/16px var(--font-sans); }
+
+.tag { flex: none; padding: 3px 9px; border-radius: var(--radius-md); background: var(--bg-subtle); font: 600 11px/14px var(--font-sans); color: var(--text-primary); white-space: nowrap; }
+.tag--check { background: var(--status-check); }
+
+.alts { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.alts__label { font: 400 10px/13px var(--font-sans); color: var(--text-secondary); }
+.alt { padding: 3px 7px; border: 1px solid var(--border-default); border-radius: 5px; background: var(--bg-surface); font: 400 11px/14px var(--font-mono); }
+.alt:hover { border-color: var(--border-strong); }
+.alt.is-on { border-color: var(--border-focus); box-shadow: inset 0 0 0 .5px var(--border-focus); padding: 3.5px 7.5px; }
+
+.btn--xs { padding: 5px 10px; border-radius: 7px; font-size: 11px; line-height: 14px; }
+
+.select--inline { width: 100%; }
+
+.inset--learn { display: grid; gap: 8px; padding: 12px; cursor: default; }
+.inset--learn strong { font: 600 12px/17px var(--font-sans); }
+.inset--learn p { margin: 0; font: 400 11px/16px var(--font-sans); color: var(--text-secondary); }
+.inset--learn .field__actions { padding-top: 0; }
+
+.inset--history { display: grid; gap: 8px; padding: 12px; }
+.history__row { display: flex; align-items: center; gap: 12px; }
+.history__row span { flex: 1; font: 400 11px/14px var(--font-sans); white-space: pre-wrap; }
+.history__row .btn { flex: none; }
+
+.fields-panel__hint { margin-left: 4px; }
+.fields-panel__hint { font: 400 11px/14px var(--font-sans); color: var(--text-secondary); }
+.btn--revert { padding: 3px 8px; gap: 4px; border-radius: 6px; font-size: 11px; line-height: 14px; }
+
+/* ---------- When reading goes wrong ---------- */
+.rcpt__line--strong { font-weight: 500; }
+.rcpt__line.is-marked { padding: 1px 3px; background: var(--evidence-soft); }
+.rcpt--narrow { width: 230px; }
+.rcpt--narrow .rcpt__rule { width: 186px; }
+
+/* Partial read: the photo stops partway down the receipt */
+.crop { width: 270px; height: 168px; flex: none; overflow: hidden; }
+.crop__edge { display: block; width: 300px; height: 1.5px; flex: none; background: repeating-linear-gradient(90deg, var(--text-primary) 0 5px, transparent 5px 9px); }
+
+/* Duplicate: the new upload beside the one already in your records */
+.doc-area--pair { flex-direction: row; align-items: flex-start; justify-content: center; gap: 20px; }
+.pair { width: 230px; flex: none; display: flex; flex-direction: column; gap: 8px; }
+
+/* Not a receipt: the photo itself, nothing marked on it */
+.photo-block {
+  width: 360px; height: 260px; flex: none; border-radius: 6px; background: var(--border-strong);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  font: 400 11px/14px var(--font-sans); color: var(--text-secondary);
+}
+.photo-block .t-overline { font: 400 11px/14px var(--font-mono); letter-spacing: 0; }
+
+.doc-actions { display: flex; align-items: center; gap: 8px; }
+
+.inset--pad { padding: 12px; }
+.inset--tip { display: grid; gap: 8px; }
+.inset--tip p { margin: 0; }
+
+.field--static { cursor: default; }
+.field--static:hover { border-color: var(--border-default); }
+.field__row .minput--missing { flex: 1; }
+.minput--missing { font: 500 12px/14px var(--font-mono); }
+.minput--missing::placeholder { font: 400 11px/14px var(--font-sans); }
+.tag--quiet { color: var(--text-secondary); }
+.tag--rule { background: var(--border-default); }
+
+.mfield--tight { gap: 6px; }
+.mfield__row > .mfield__meta, .mfield__row > .tag { flex: none; }
+.mfield__row > .minput, .mfield__row > .select { flex: 1; min-width: 0; }
+.mfield__meta:empty { display: none; }
+.mfield__meta .field__meta { display: block; }
+
+.fields-panel__note { margin: 0; font: 400 11px/16px var(--font-sans); color: var(--text-secondary); }
+
+.match { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 10px; align-items: center; }
+.match__value { font: 500 12px/16px var(--font-mono); }
+.match__tag { font: 600 10px/13px var(--font-sans); }

@@ -14,6 +14,19 @@ export function badge(status, label) {
   return `<span class="badge badge--${status}">${escapeHtml(text)}</span>`;
 }
 
+// Detail pages: a back button and the parent page in line with the title, at title size.
+export function backTitle(parent, href, title) {
+  return `
+    <div class="back-title">
+      <a class="back-btn" href="${href}" aria-label="Back to ${escapeHtml(parent)}">${icon("arrowLeft", 18)}</a>
+      <h1 class="back-title__text t-heading-lg">
+        <a class="back-title__parent" href="${href}">${escapeHtml(parent)}</a>
+        <span class="back-title__sep" aria-hidden="true">/</span>
+        <span class="back-title__current" data-title>${escapeHtml(title)}</span>
+      </h1>
+    </div>`;
+}
+
 export function button({ label, iconName, variant = "", size = "", attrs = "" }) {
   const cls = ["btn", variant && `btn--${variant}`, size && `btn--${size}`].filter(Boolean).join(" ");
   return `<button type="button" class="${cls}" ${attrs}>${iconName ? icon(iconName, 14) : ""}<span>${escapeHtml(label)}</span></button>`;
@@ -29,9 +42,11 @@ export function toast(message, { undo, duration = 8000 } = {}) {
     host.setAttribute("aria-live", "polite");
     document.body.appendChild(host);
   }
+  // One toast at a time. A newer message replaces the older one.
+  host.querySelectorAll(".toast").forEach((t) => t.remove());
   const el = document.createElement("div");
   el.className = "toast";
-  el.innerHTML = `<span>${escapeHtml(message)}</span>${undo ? `<button type="button" class="btn btn--sm">${icon("undo", 14)}<span>Undo</span></button>` : ""}`;
+  el.innerHTML = `<span>${escapeHtml(message)}</span>${undo ? `<button type="button" class="toast__undo">${icon("undo", 13)}<span>Undo</span></button>` : ""}`;
   host.appendChild(el);
 
   let remaining = duration, started = Date.now(), timer;
@@ -45,4 +60,13 @@ export function toast(message, { undo, duration = 8000 } = {}) {
   if (undo) el.querySelector("button").addEventListener("click", () => { undo(); close(); });
   start();
   return close;
+}
+
+// Opens the system file picker. The demo only needs to know a file was chosen.
+export function pickFile(onPick) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*,application/pdf";
+  input.onchange = () => { if (input.files.length) onPick(input.files[0]); };
+  input.click();
 }

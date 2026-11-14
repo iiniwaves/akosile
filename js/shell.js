@@ -5,7 +5,7 @@ import { $, $$ } from "./ui.js";
 const NAV = [
   { id: "inbox", label: "Inbox", icon: "inbox", countKey: "inbox" },
   { id: "reports", label: "Reports", icon: "reports" },
-  { id: "rules", label: "Learned rules", icon: "rules", countKey: "rules" },
+  { id: "rules", label: "Learned rules", icon: "rules" },
   { id: "settings", label: "Settings", icon: "settings" },
 ];
 
@@ -38,7 +38,7 @@ export function renderSidebar(counts = {}) {
       ${NAV.map((n) => `
         <a class="nav__item" href="#/${n.id}" data-nav="${n.id}" title="${n.label}">
           ${icon(n.icon, 17, 1.7)}<span class="nav__label">${n.label}</span>
-          ${n.countKey ? `<span class="count">${counts[n.countKey] ?? ""}</span>` : ""}
+          ${n.countKey ? `<span class="count" aria-label="${counts[n.countKey] || 0} need you">${counts[n.countKey] || ""}</span>` : ""}
         </a>`).join("")}
     </nav>
 
@@ -124,6 +124,9 @@ export function setActiveNav(id) {
 }
 
 export function setCount(key, value) {
+  // Only the Inbox carries a count: receipts that still need a person. Zero hides it.
   const el = $(`[data-nav="${key}"] .count`);
-  if (el) el.textContent = value ?? "";
+  if (!el) return;
+  el.textContent = value || "";
+  el.setAttribute("aria-label", `${value || 0} need you`);
 }

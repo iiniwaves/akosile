@@ -11,7 +11,7 @@ export function renderUpload(root, { onFiles }) {
     </header>
 
     <section class="dropzone" data-dropzone aria-label="Upload receipts">
-      <img src="assets/receipt-thumb.svg" alt="" width="44" height="56">
+      <span class="doc-placeholder" style="width:44px;height:56px" aria-hidden="true"></span>
       <h2 class="dropzone__title">Drop receipts here</h2>
       <p class="dropzone__hint">PDF, JPG or PNG. Up to 20 at a time.</p>
       <div class="dropzone__actions">

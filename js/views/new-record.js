@@ -1,29 +1,23 @@
 import { icon } from "../icons.js";
 import { naira, escapeHtml } from "../format.js";
-import { button, toast } from "../ui.js";
-import { categories, noReceiptReasons, recentDates } from "../data.js";
+import { button, toast, backTitle } from "../ui.js";
+import { categories, noReceiptReasons } from "../data.js";
+import { dateField, handleDatePicker } from "../datepicker.js";
 
 // For cash payments and lost receipts. Same layout as review, but the photo slot is empty
 // and there's one extra required field: why there's no receipt.
-export function renderNewRecord(root, state, { onSave }) {
+export function renderNewRecord(root, state, { onSave, learnRule }) {
   const draft = state.draft ||= { reason: "Paid cash", vendor: "Mama Put, Yaba", date: "13 Nov 2026", total: "6500", category: "" };
 
   root.innerHTML = `
-    <header class="page-head">
-      <div class="page-head__title">
-        <a class="t-overline muted crumb" href="#/inbox">‹ Inbox  ·  New record</a>
-        <h1 class="t-heading-lg" data-title>${escapeHtml(draft.vendor || "New record")}</h1>
-      </div>
-      <div class="page-head__actions">
-        ${button({ label: "Previous", iconName: "chevronLeft", attrs: "disabled" })}
-        <button type="button" class="btn" disabled><span>Next</span>${icon("chevronRight", 14)}</button>
-      </div>
+    <header class="page-head page-head--detail">
+      ${backTitle("Inbox", "#/inbox", draft.vendor || "New record")}
     </header>
 
     <div class="split">
       <section class="doc-area" aria-label="Receipt">
         <div class="photo-slot">
-          <img src="assets/receipt-thumb.svg" alt="" width="40" height="52">
+          <span class="doc-placeholder" style="width:40px;height:52px" aria-hidden="true"></span>
           <h2>No receipt photo</h2>
           <p>You can upload one later, or forward the email receipt.</p>
           <div class="photo-slot__actions">
@@ -57,18 +51,13 @@ export function renderNewRecord(root, state, { onSave }) {
           </span>
         </label>
 
-        <label class="mfield" data-field="date">
+        <div class="mfield" data-field="date">
           <span class="mfield__row">
             <span class="mfield__strip"></span>
             <span class="mfield__label">Date *</span>
-            <span class="select">
-              <select name="date" class="select__control select__control--mono">
-                ${recentDates.map((d) => `<option ${d === draft.date ? "selected" : ""}>${d}</option>`).join("")}
-              </select>
-              ${icon("chevronDown", 16, 1.6)}
-            </span>
+            ${dateField({ name: "date", value: draft.date })}
           </span>
-        </label>
+        </div>
 
         <label class="mfield" data-field="total">
           <span class="mfield__row">
@@ -90,7 +79,18 @@ export function renderNewRecord(root, state, { onSave }) {
               ${icon("chevronDown", 16, 1.6)}
             </span>
           </label>
-          <p class="mfield__note">No team rule for this vendor yet. Pick one and the AI will ask if it should remember it.</p>
+          ${draft.learn === "asking" && draft.category && draft.vendor.trim()
+            ? `<div class="inset inset--learn">
+                <strong>Use ${escapeHtml(draft.category)} for all ${escapeHtml(draft.vendor.trim())} receipts?</strong>
+                <p>Saved to ${escapeHtml(state.workspaceName)}, so it's filled in for anyone on the team. Remove it any time in Learned rules.</p>
+                <div class="field__actions">
+                  ${button({ label: "Yes, always", iconName: "check", variant: "primary", attrs: 'data-learn="yes"' })}
+                  ${button({ label: "Just this one", attrs: 'data-learn="no"' })}
+                </div>
+              </div>`
+            : draft.learn === "saved"
+            ? `<p class="mfield__note">Saved as a team rule: ${escapeHtml(draft.vendor.trim())} is always ${escapeHtml(draft.category)}.</p>`
+            : `<p class="mfield__note">No team rule for this vendor yet. Pick one and the AI will ask if it should remember it.</p>`}
         </div>
 
         <div class="fields-panel__spacer"></div>
@@ -115,6 +115,14 @@ export function renderNewRecord(root, state, { onSave }) {
   sync();
 
   root.onclick = (e) => {
+    if (handleDatePicker(e, root, (name, value) => { draft[name] = value; sync(); })) return;
+    const learn = e.target.closest("[data-learn]");
+    if (learn) {
+      if (learn.dataset.learn === "yes") learnRule(draft.category, draft.vendor.trim());
+      draft.learn = learn.dataset.learn === "yes" ? "saved" : "declined";
+      renderNewRecord(root, state, { onSave, learnRule });
+      return;
+    }
     const chip = e.target.closest("[data-reason]");
     if (chip) {
       draft.reason = chip.dataset.reason;
@@ -140,7 +148,12 @@ export function renderNewRecord(root, state, { onSave }) {
   form.onchange = (e) => {
     const { name, value } = e.target;
     if (name === "date") draft.date = value;
-    if (name === "category") { draft.category = value; e.target.classList.remove("is-empty"); }
+    if (name === "category") {
+      draft.category = value;
+      // Choosing a category by hand always offers to remember it for this vendor.
+      draft.learn = draft.vendor.trim() ? "asking" : null;
+      renderNewRecord(root, state, { onSave, learnRule });
+    }
   };
   form.total.addEventListener("focus", (e) => { e.target.value = draft.total ? String(parseTotal(draft.total)) : ""; });
   form.total.addEventListener("blur", (e) => { const n = parseTotal(e.target.value); draft.total = n ? String(n) : ""; e.target.value = n ? naira(n) : ""; sync(); });

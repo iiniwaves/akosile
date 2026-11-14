@@ -87,3 +87,6 @@
   --sidebar-width: 200px;
   --sidebar-collapsed: 72px;
 }
+
+/* Handwriting on receipts */
+@font-face { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; font-display: swap; src: url("../assets/fonts/instrument-serif-latin-400-italic.woff2") format("woff2"); }
