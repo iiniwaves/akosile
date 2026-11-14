@@ -121,6 +121,7 @@ Lucide, 24px grid, 2px stroke, round caps and joins. Used at 14px in buttons, 15
 
 ## Money, dates, data
 
+- While you type an amount the field shows plain digits (`15645`), and it becomes `₦15,645.00` when you leave the field.
 - Naira only: `₦72,300.00`. Comma groups, two kobo digits, Geist Mono. Tables show the full amount up to ₦999,999,999.99, then a short figure (₦12.4bn) with the full amount on hover. Review, reports and exports always show the full amount.
 - Dates: `12 Nov 2026` in tables and fields; receipts show the raw printed format (12/11/2026).
 - Workspace: Kola & Co. (4 people: Ada Bello Admin, Tunde Ade, Kemi Ojo, Bisi Lawal). Learned rules are saved to the workspace, not the person.
