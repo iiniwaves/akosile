@@ -12,21 +12,27 @@ const needsLook = (f) => f.state === "check" || f.state === "missing";
 const fmt = (key, v) => (MONEY.includes(key) ? naira(v) : String(v));
 
 export function renderReview(root, state, id, hooks) {
-  const r = state.receipts.find((x) => x.id === id);
+  const r = state.receipts.find((x) => x.id === id) || state.submitted.find((x) => x.id === id);
   const doc = state.docs[id];
   if (!r || !doc) { location.hash = "#/inbox"; return; }
 
-  const ui = (state.reviewUi[id] ||= { selected: doc.fields.category?.state === "rule" ? "category" : null, editing: null });
-  const queue = state.queue?.ids?.includes(id) ? state.queue : { mode: "open", ids: openable(state) };
+  // Opened from a submitted report: everything still shows its source, but nothing can change.
+  const report = r.report && state.myReports.find((x) => x.id === r.report);
+  const readOnly = !!report;
+  const ui = (state.reviewUi[r.report ? `report:${id}` : id] ||= r.report ? { selected: null, editing: null } : { selected: doc.fields.category?.state === "rule" ? "category" : null, editing: null });
+  const queue = report
+    ? { mode: "report", ids: report.items.map((i) => i.receiptId) }
+    : state.queue?.ids?.includes(id) ? state.queue : { mode: "open", ids: openable(state) };
   const pos = queue.ids.indexOf(id);
   const keys = FIELD_ORDER.filter((k) => doc.fields[k]);
   const toCheck = keys.filter((k) => needsLook(doc.fields[k]));
   const history = doc.history || [];
 
-  const navCaption = `Receipt ${pos + 1} of ${queue.ids.length}${queue.mode === "review" ? " to check" : ""}`;
+  const navCaption = `Receipt ${pos + 1} of ${queue.ids.length}${queue.mode === "review" ? " to check" : queue.mode === "report" ? " in this report" : ""}`;
 
   let headTitle, headSub;
-  if (r.status === "approved") { headTitle = "Approved"; headSub = "Approved by you. You can undo this until the report is submitted."; }
+  if (readOnly) { headTitle = "Submitted"; headSub = `In ${report.title}, submitted ${report.when}. It can't be changed now.`; }
+  else if (r.status === "approved") { headTitle = "Approved"; headSub = "Approved by you. You can undo this until the report is submitted."; }
   else if (toCheck.length) { headTitle = `${toCheck.length} field${toCheck.length > 1 ? "s" : ""} to check`; headSub = "The rest look right."; }
   else if (history.length) { headTitle = "All fields checked"; headSub = "Ready to approve."; }
   else { headTitle = "Looks good"; headSub = "Nothing to check."; }
@@ -38,7 +44,7 @@ export function renderReview(root, state, id, hooks) {
 
   root.innerHTML = `
     <header class="page-head page-head--detail">
-      ${backTitle("Inbox", "#/inbox", r.vendor)}
+      ${report ? backTitle(report.title, `#/reports/2026-11/${report.id}`, r.vendor) : backTitle("Inbox", "#/inbox", r.vendor)}
       <nav class="pager" aria-label="Move between receipts">
         <div class="page-head__actions">
           ${button({ label: "Previous", iconName: "chevronLeft", attrs: `data-go="${queue.ids[pos - 1] || ""}" ${pos > 0 ? "" : "disabled"}` })}
@@ -59,17 +65,17 @@ export function renderReview(root, state, id, hooks) {
           <h2>${headTitle}</h2>
           <p>${headSub}</p>
         </div>
-        ${keys.map((k) => field(k, doc, ui, r, state)).join("")}
+        ${keys.map((k) => field(k, doc, ui, r, state, readOnly)).join("")}
         <div class="fields-panel__spacer"></div>
-        ${history.length ? historyInset(history) : ""}
-        <div class="fields-panel__actions">
+        ${history.length ? historyInset(history, readOnly) : ""}
+        ${readOnly ? "" : `<div class="fields-panel__actions">
           ${r.status === "approved"
             ? button({ label: "Undo approval", iconName: "undo", attrs: 'data-act="unapprove"' })
             : `${button({ label: "Approve", iconName: "check", variant: "primary", attrs: `data-act="approve" ${toCheck.length ? "disabled" : ""}` })}
                ${toCheck.length
                  ? `<span class="fields-panel__hint">Check the ${FIELD_LABEL[toCheck[0]].toLowerCase()} first</span>`
                  : `<button type="button" class="btn" data-act="skip"><span>Skip for now</span>${icon("arrowRight", 14)}</button>`}`}
-        </div>
+        </div>`}
       </section>
     </div>
   `;
@@ -105,6 +111,7 @@ export function renderReview(root, state, id, hooks) {
   };
 
   root.onchange = (e) => {
+    if (readOnly) return;
     if (e.target.matches("[data-category]")) change("category", { value: e.target.value, state: "edited", line: null, note: `Was ${doc.fields.category.value}, guessed from the vendor name.` }, `Category changed to ${e.target.value}.`);
   };
 
@@ -116,6 +123,7 @@ export function renderReview(root, state, id, hooks) {
   }
 
   function handleAct(act, data) {
+    if (readOnly) return;
     const key = data.key;
     const f = key && doc.fields[key];
     if (act === "confirm") change(key, { ...f, state: "confirmed" }, `${FIELD_LABEL[key]} confirmed.`);
@@ -231,7 +239,7 @@ function receipt(doc, ui) {
   return `<article class="rcpt">${rows}</article>`;
 }
 
-function field(key, doc, ui, r, state) {
+function field(key, doc, ui, r, state, readOnly) {
   const f = doc.fields[key];
   const selected = ui.selected === key;
   const editing = ui.editing === key;
@@ -258,7 +266,10 @@ function field(key, doc, ui, r, state) {
     : `<span class="field__value${mono ? " field__value--mono" : ""}">${escapeHtml(fmt(key, f.value))}</span>`;
 
   let body = "";
-  if (f.state === "check" && selected) {
+  if (readOnly) {
+    if (selected && f.note) body += `<p class="field__note">${escapeHtml(f.note)}</p>`;
+    if (selected && f.state === "rule") body += `<p class="field__reason">${escapeHtml(f.ruleText)}</p>`;
+  } else if (f.state === "check" && selected) {
     body += `<p class="field__reason">${escapeHtml(f.reason)}</p>`;
     {
       if (f.alternatives?.length > 1) {
@@ -288,7 +299,7 @@ function field(key, doc, ui, r, state) {
     }
   }
 
-  if (key === "category" && doc.learn === "asking") body += learnInset(doc, state);
+  if (!readOnly && key === "category" && doc.learn === "asking") body += learnInset(doc, state);
 
   const cls = ["field", `field--${f.state}`, selected && "is-selected", body && selected && "is-open"].filter(Boolean).join(" ");
   return `
@@ -331,14 +342,14 @@ function learnInset(doc, state) {
     </div>`;
 }
 
-function historyInset(history) {
+function historyInset(history, readOnly) {
   return `
     <div class="inset inset--history">
       <span class="t-overline muted">History</span>
       ${history.map((h, i) => ({ h, i })).reverse().map(({ h, i }) => `
         <div class="history__row">
           <span>${FIELD_LABEL[h.key]}  ${escapeHtml(describe(h.key, h.from))} → ${escapeHtml(describe(h.key, h.to))}, by you, just now</span>
-          <button type="button" class="btn btn--revert" data-act="revert" data-idx="${i}">${icon("undo", 12)}<span>Revert</span></button>
+          ${readOnly ? "" : `<button type="button" class="btn btn--revert" data-act="revert" data-idx="${i}">${icon("undo", 12)}<span>Revert</span></button>`}
         </div>`).join("")}
     </div>`;
 }

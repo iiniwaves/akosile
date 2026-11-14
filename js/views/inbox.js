@@ -96,7 +96,7 @@ export function renderInbox(root, state) {
       else toast("This record has no receipt to show.", { duration: 3000 });
     }
     if (btn.dataset.action === "upload-again") pickFile(() => state.actions.reread(id));
-    if (btn.dataset.action === "submit") toast("Submitting reports comes in a later stage of the demo.", { duration: 3000 });
+    if (btn.dataset.action === "submit") state.actions.submit();
   };
 }
 
@@ -110,6 +110,16 @@ function summaryCard(state) {
     <section class="card summary" aria-live="polite">
       <h2>${approved.length} approved, ${naira(sum)}</h2>
       <p>${left ? `${plural(left, "receipt")} still need${left === 1 ? "s" : ""} you. ` : ""}Approvals can be undone until you submit the report.</p>
+    </section>`;
+  }
+  // Right after submitting: say where the receipts went and what's still here.
+  if (state.lastReport) {
+    const rep = state.lastReport;
+    const left = receipts.length;
+    return `
+    <section class="card summary" aria-live="polite">
+      <h2>${escapeHtml(rep.title)} submitted, ${naira(rep.total)}</h2>
+      <p>${plural(rep.count, "receipt")} went into the November report. ${left ? `${plural(left, "receipt")} still need${left === 1 ? "s" : ""} you, and ${left === 1 ? "it" : "they"} can go in December's report once ${left === 1 ? "it's" : "they're"} sorted.` : "The inbox is clear."}</p>
     </section>`;
   }
   const read = receipts.filter((r) => !r.manual).length;
