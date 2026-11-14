@@ -50,7 +50,7 @@ function render(panel) {
   el.className = "dp";
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-label", `Pick a date for ${name}`);
-  el.style.top = `${t.bottom - p.top + panel.scrollTop + 4}px`;
+  el.style.top = `${t.bottom - p.top + panel.scrollTop + 2}px`;
   el.innerHTML = `
     <div class="dp__head">
       <strong>${MONTHS_LONG[month.getMonth()]} ${month.getFullYear()}</strong>
