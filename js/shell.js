@@ -1,6 +1,6 @@
 import { icon } from "./icons.js";
 import { workspace, me } from "./data.js";
-import { $, $$ } from "./ui.js";
+import { $, $$, toast } from "./ui.js";
 
 const NAV = [
   { id: "inbox", label: "Inbox", icon: "inbox", countKey: "inbox" },
@@ -61,12 +61,13 @@ function profileMenu() {
   <div class="menu" role="menu" aria-label="Profile">
     <div class="menu__head"><strong>${me.name}</strong><span>${me.email}</span></div>
     <div class="menu__divider"></div>
-    <button class="menu__item" role="menuitem">${icon("pen", 16)}<span>Your profile</span></button>
-    <button class="menu__item" role="menuitem">${icon("mail", 16)}<span>Notifications</span></button>
-    <button class="menu__item" role="menuitem">${icon("folder", 16)}<span>Switch workspace</span>${icon("chevronRight", 16)}</button>
-    <button class="menu__item" role="menuitem">${icon("settings", 16)}<span>Keyboard shortcuts</span><kbd>?</kbd></button>
+    <button class="menu__item" role="menuitem" data-menu="profile">${icon("pen", 16)}<span>Your profile</span></button>
+    <button class="menu__item" role="menuitem" data-menu="notifications">${icon("mail", 16)}<span>Notifications</span></button>
+    <button class="menu__item" role="menuitem" data-menu="switch">${icon("folder", 16)}<span>Switch workspace</span>${icon("chevronRight", 16)}</button>
+    <button class="menu__item" role="menuitem" data-menu="shortcuts">${icon("settings", 16)}<span>Keyboard shortcuts</span><kbd>?</kbd></button>
+    <button class="menu__item" role="menuitem" data-menu="restart">${icon("retry", 16)}<span>Restart the demo</span></button>
     <div class="menu__divider menu__divider--after"></div>
-    <button class="menu__item" role="menuitem">${icon("arrowRight", 16)}<span>Sign out</span></button>
+    <button class="menu__item" role="menuitem" data-menu="signout">${icon("arrowRight", 16)}<span>Sign out</span></button>
   </div>`;
 }
 
@@ -75,6 +76,8 @@ export function bindSidebar(app) {
 
   // Collapse and expand keep the toggle in the same spot.
   sidebar.addEventListener("click", (e) => {
+    const item = e.target.closest("[data-menu]");
+    if (item) { closeMenus(); menuAction(item.dataset.menu); return; }
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
     const action = btn.dataset.action;
@@ -109,6 +112,24 @@ export function bindSidebar(app) {
   try {
     if (localStorage.getItem("ak-collapsed") === "1") $('[data-action="collapse"]', sidebar).click();
   } catch {}
+}
+
+export const SHORTCUTS = "Press / to search and ⌘K to ask the record keeper, from any screen.";
+
+// Everything in the demo lives in memory, so restarting is a fresh page load on an empty inbox.
+export function restartDemo() {
+  try { sessionStorage.setItem("ak-restarted", "1"); } catch {}
+  location.hash = "#/inbox";
+  location.reload();
+}
+
+function menuAction(action) {
+  if (action === "profile") location.hash = "#/settings";
+  if (action === "shortcuts") toast(SHORTCUTS, { duration: 4000 });
+  if (action === "restart") restartDemo();
+  if (action === "notifications") toast("Notification settings aren't part of this demo.", { duration: 3000 });
+  if (action === "switch") toast(`${workspace.name} is the only workspace in this demo.`, { duration: 3000 });
+  if (action === "signout") toast("Signing out isn't part of this demo. Restart the demo to start over.", { duration: 3500 });
 }
 
 function closeMenus() {

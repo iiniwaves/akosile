@@ -16,6 +16,16 @@ npx serve .
 
 Then open http://localhost:8000. Opening `index.html` straight from disk won't work, because browsers block ES modules on `file://`.
 
+## A tour
+
+1. **Upload** any file on the empty inbox. Six receipts read one by one, and two come back flagged.
+2. **Review** Shell and The Yellow Chilli. Click a field to see where it came from on the receipt, confirm or change the total, and undo anything from the toast or the history.
+3. **Teach it a rule.** Change Uber's category to Transport and say Yes, always. The next Uber receipt arrives with the rule already applied.
+4. **Approve** the ready receipts in bulk, then click Upload receipts again for a second batch where reading goes wrong: a cropped photo, a blurry one, a photo that isn't a receipt, a possible copy and a slow file.
+5. **Submit the report**, open it, and download it as a PDF. Approved receipts leave the inbox and the rest stay put.
+6. **Search** with / and **ask the record keeper** with Cmd+K. Show in inbox turns an answer into a labelled filter.
+7. **Learned rules** and **Settings** live in the sidebar. Restart the demo from the profile menu at the bottom left.
+
 ## Structure
 
 ```
@@ -52,7 +62,7 @@ design-system/        DESIGN_SYSTEM.md: tokens, type, components and copy rules
 
 ## Shortcuts
 
-Press / to search and Cmd+K (Ctrl+K on Windows) to ask the record keeper, from any screen.
+Press / to search and Cmd+K (Ctrl+K on Windows) to ask the record keeper, from any screen. Press ? to see them again.
 
 ## Credits
 

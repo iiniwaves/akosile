@@ -1,4 +1,4 @@
-import { renderSidebar, bindSidebar, setActiveNav, setCount } from "./shell.js";
+import { renderSidebar, bindSidebar, setActiveNav, setCount, SHORTCUTS } from "./shell.js";
 import { renderInbox } from "./views/inbox.js";
 import { renderUpload } from "./views/upload.js";
 import { renderNewRecord } from "./views/new-record.js";
@@ -56,6 +56,7 @@ document.addEventListener("keydown", (e) => {
   const typing = e.target.closest?.("input, textarea, select, [contenteditable]");
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); if (assistantOpen()) closeAssistant(); else ask(); }
   else if (e.key === "/" && !typing && !searchOpen()) { e.preventDefault(); search(); }
+  else if (e.key === "?" && !typing) toast(SHORTCUTS, { duration: 4000 });
 });
 const main = document.getElementById("main");
 
@@ -383,3 +384,6 @@ function route() {
 
 window.addEventListener("hashchange", () => { route(); main.scrollTop = 0; });
 route();
+try {
+  if (sessionStorage.getItem("ak-restarted")) { sessionStorage.removeItem("ak-restarted"); toast("The demo has restarted. Upload a file to begin.", { duration: 3500 }); }
+} catch {}
