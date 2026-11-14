@@ -116,3 +116,49 @@ a.bars__col:hover:not(.is-current) .bars__bar { background: var(--text-tertiary)
 .dialog__actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
 a.btn { text-decoration: none; }
 .table--months .btn--sm { width: 96px; justify-content: center; }
+
+/* ---------- Report as a PDF (A4, print only) ---------- */
+.print-page { display: none; }
+@page { size: A4; margin: 0; }
+@media print {
+  html, body { background: #fff; margin: 0; }
+  .app { min-width: 0; min-height: 0; display: block; }
+  .sidebar, .toast-host, .dialog-host { display: none !important; }
+  .main { padding: 0; min-height: 0; display: block; }
+  .main > :not(.print-page) { display: none !important; }
+  .print-page { display: flex; }
+}
+.print-page {
+  width: 794px; height: 1123px; padding: 57px; flex-direction: column; gap: 24px;
+  background: #fff; color: var(--text-primary); -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  font: 400 11px/14px var(--font-sans);
+}
+.print-page .t-overline { font: 400 9px/12px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); }
+.print-page__head { display: flex; justify-content: space-between; align-items: center; height: 28px; }
+.print-page__head img { display: block; height: 24px; width: auto; }
+.print-page__ws { display: grid; gap: 2px; justify-items: end; }
+.print-page__ws strong { font: 600 11px/14px var(--font-sans); }
+.print-page__rule { margin: 0; border: 0; height: 1px; background: var(--text-primary); }
+.print-page__title { display: grid; gap: 6px; }
+.print-page__title h1 { margin: 0; font: 600 24px/30px var(--font-sans); }
+.print-page__title p { margin: 0; color: var(--text-secondary); white-space: pre; }
+.print-page__stats { display: flex; gap: 40px; padding: 14px 16px; border-radius: 8px; background: var(--ink-50); }
+.print-page__stats div { display: grid; gap: 4px; }
+.print-page__stats strong { font: 500 16px/20px var(--font-mono); }
+.print-page__row { display: grid; grid-template-columns: 210px 96px 96px 150px 1fr; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border-default); }
+.print-page__row--head { padding: 0 0 6px; border-bottom-color: var(--text-primary); }
+.print-page__row > :last-child { text-align: right; }
+.print-page__vendor { display: grid; gap: 2px; }
+.print-page__vendor strong { font: 600 11px/14px var(--font-sans); }
+.print-page__vendor span { font: 400 9px/12px var(--font-sans); color: var(--text-secondary); }
+.print-page__mono { font: 400 11px/14px var(--font-mono); }
+.print-page__muted { color: var(--text-secondary); }
+.print-page__amount { font: 500 11px/14px var(--font-mono); }
+.print-page__total { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; }
+.print-page__total strong { font: 600 11px/14px var(--font-sans); }
+.print-page__total span { font: 500 13px/17px var(--font-mono); }
+.print-page__notes { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.print-page__notes div { display: grid; gap: 4px; align-content: start; }
+.print-page__notes p { margin: 0; font: 400 11px/16px var(--font-sans); }
+.print-page__foot { margin-top: auto; display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border-default); font: 400 9px/12px var(--font-sans); color: var(--text-secondary); white-space: pre; }
+.print-page__foot .print-page__mono { font-size: 9px; line-height: 12px; }

@@ -283,6 +283,8 @@ export function renderReport(root, state, m, id) {
       <section class="card report-note"><span class="t-overline muted">Left out</span><p>${escapeHtml(leftOutText)}</p></section>
       <section class="card report-note"><span class="t-overline muted">Team rules used</span><p>${escapeHtml(rulesText)}</p></section>
     </div>
+
+    ${printPage(state, rep, items, m, who, leftOutText, rulesText)}
   `;
 
   root.onclick = (e) => {
@@ -298,12 +300,54 @@ export function renderReport(root, state, m, id) {
       download(`${rep.title.toLowerCase().replace(/\W+/g, "-")}-${monthKey(m)}.csv`, [["Vendor", "Date", "Category", "Total", "Source"], ...rows.map((i) => [i.vendor, `${i.day} ${MONTH_SHORT[m]} ${YEAR}`, i.category, i.total, i.source])]);
       toast(`Exported ${plural(rows.length, "receipt")}.`, { duration: 3000 });
     }
-    if (act === "pdf") toast("PDF download isn't part of this demo. Export CSV works.", { duration: 3000 });
+    if (act === "pdf") {
+      // The browser's print dialog saves it as a PDF. The file name comes from the page title.
+      const title = document.title;
+      document.title = `${rep.title}, ${MONTHS[m]} ${YEAR}`;
+      window.addEventListener("afterprint", () => { document.title = title; }, { once: true });
+      window.print();
+    }
   };
   root.onchange = (e) => {
     if (e.target.matches("[data-all]")) { if (e.target.checked) items.forEach((i) => selected.add(i.id)); else selected.clear(); renderReport(root, state, m, id); }
     if (e.target.matches("[data-pick]")) { if (e.target.checked) selected.add(e.target.dataset.pick); else selected.delete(e.target.dataset.pick); renderReport(root, state, m, id); }
   };
+}
+
+// The report on one A4 page, shown only when printing.
+function printPage(state, rep, items, m, who, leftOutText, rulesText) {
+  const status = rep.status === "draft" ? `Draft, last edited by ${who}, ${rep.at}` : `Submitted by ${who}, ${rep.at}`;
+  return `
+    <article class="print-page" aria-hidden="true">
+      <header class="print-page__head">
+        <img src="assets/logo/akosile-wordmark.svg" alt="" height="24">
+        <div class="print-page__ws"><strong>${escapeHtml(state.workspaceName)}</strong><span class="t-overline">Expense report</span></div>
+      </header>
+      <hr class="print-page__rule">
+      <div class="print-page__title"><h1>${escapeHtml(rep.title)}</h1><p>${MONTHS[m]} ${YEAR}  ·  ${escapeHtml(status)}</p></div>
+      <div class="print-page__stats">
+        <div><span class="t-overline">Total</span><strong>${naira(rep.total)}</strong></div>
+        <div><span class="t-overline">Receipts</span><strong>${rep.count}</strong></div>
+        <div><span class="t-overline">Left out</span><strong>${rep.leftOut?.length || 0}</strong></div>
+      </div>
+      <div class="print-page__table">
+        <div class="print-page__row print-page__row--head"><span class="t-overline">Vendor</span><span class="t-overline">Date</span><span class="t-overline">Category</span><span class="t-overline">Source</span><span class="t-overline">Total</span></div>
+        ${items.map((i) => `
+          <div class="print-page__row">
+            <span class="print-page__vendor"><strong>${escapeHtml(i.vendor)}</strong>${i.place ? `<span>${escapeHtml(i.place)}</span>` : ""}</span>
+            <span class="print-page__mono">${i.day} ${MONTH_SHORT[m]} ${YEAR}</span>
+            <span>${escapeHtml(i.category || "")}</span>
+            <span class="print-page__muted">${escapeHtml(i.source)}</span>
+            <span class="print-page__amount">${naira(i.total)}</span>
+          </div>`).join("")}
+        <div class="print-page__total"><strong>Total, ${plural(rep.count, "receipt")}</strong><span>${naira(rep.total)}</span></div>
+      </div>
+      <div class="print-page__notes">
+        <div><span class="t-overline">Left out</span><p>${escapeHtml(leftOutText)}</p></div>
+        <div><span class="t-overline">Team rules used</span><p>${escapeHtml(rulesText)}</p></div>
+      </div>
+      <footer class="print-page__foot"><span>${escapeHtml(state.workspaceName)}  ·  ${escapeHtml(rep.title)}, ${MONTHS[m]} ${YEAR}</span><span class="print-page__mono">Page 1 of 1</span></footer>
+    </article>`;
 }
 
 // ---------- Submitting ----------
