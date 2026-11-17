@@ -364,7 +364,7 @@ const routes = [
 
 function placeholder(name) {
   main.innerHTML = `
-    <header class="page-head"><div class="page-head__title"><span class="t-overline muted">${escapeHtml(workspace.name)}</span><h1 class="t-heading-lg">${escapeHtml(name)}</h1></div></header>
+    <header class="page-head"><div class="page-head__title"><h1 class="t-heading-lg">${escapeHtml(name)}</h1></div></header>
     <section class="card empty-note">This screen arrives in a later stage of the demo.</section>`;
 }
 

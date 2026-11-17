@@ -98,7 +98,6 @@ function replyHtml(r) {
     : "";
   return `
     <div class="answer">
-      <span class="t-overline muted">${escapeHtml(r.overline)}</span>
       <strong class="answer__figure">${escapeHtml(r.figure)}</strong>
       <p class="answer__line${r.strong ? " is-strong" : ""}">${escapeHtml(r.line)}</p>
       ${rows}${sources}

@@ -29,7 +29,6 @@ export function renderSettings(root, state, { onRename }) {
   root.innerHTML = `
     <header class="page-head">
       <div class="page-head__title">
-        <span class="t-overline muted">Settings  ·  ${escapeHtml(state.workspaceName)}</span>
         <h1 class="t-heading-lg t-heading-lg--plain">Settings</h1>
       </div>
     </header>

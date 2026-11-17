@@ -63,7 +63,7 @@ Sora for everything you read. Geist Mono for everything you compare: amounts, da
 | Label/Small (buttons, row titles) | Sora 600 | 12 / 130% | 0 |
 | Mono/Amount | Geist Mono 500 | 13 / 130% (12 in tables) | 0 |
 | Mono/Data (dates) | Geist Mono 400 | 12 / 130% | 0 |
-| Mono/Overline (column heads, eyebrows) | Geist Mono 400 | 10–11 / 130%, UPPERCASE | 6% |
+| Mono/Overline (column heads, field labels) | Geist Mono 400 | 10–11 / 130%, UPPERCASE | 6% |
 
 Sora has no glyphs for ọ, ẹ or the grave accent. **Never type the product name in UI copy.** Use the drawn SVG wordmark, the drawn "Alákọsílẹ̀" name SVG in the Ask button and assistant panel, or rewrite the sentence ("The rest look right.").
 
@@ -78,8 +78,8 @@ Sora has no glyphs for ọ, ẹ or the grave accent. **Never type the product na
 
 - **Sidebar** 200px, white, padding 28 16 24 16, gap 18. Order: wordmark (24px tall), workspace switcher, Search field + Ask button (gap 8), nav (gap 2), spacer, collapse button (34×34), profile card.
 - **Collapsed sidebar** 72px: kọ icon, avatar only, icon-only search/ask/nav, expand button above the user avatar. Same spot as the collapse button so the toggle never moves.
-- **Main** fills the rest, background #F4F5F7, padding 28 32, gap 18. Header: overline (Mono 10, secondary) above page title (26), actions right-aligned to the title baseline.
-- **Detail pages** (a receipt, a new record, a month, a report) have no overline. Instead: a 36px back button (white, 1px border, radius 8, arrow-left 18) then the parent page and the current page in one line at title size, "Inbox / Shell" (parent Sora 600 26 secondary and clickable, slash Sora 400 26 border-strong, current Sora 600 26 ink), gap 12 after the button and 10 between words. Previous and Next sit on the right with a caption under them (Sora 11 secondary, centred, gap 6): "Receipt 1 of 2 to check", "Receipt 4 of 5" or "Receipt 1 of 4 that need you". Previous is disabled on the first receipt and Next on the last. A new record has no Previous or Next. Header aligns items to the centre and is 55px tall with the pager, 36px without.
+- **Main** fills the rest, background #F4F5F7, padding 28 32, gap 18. Header: page title (26) on its own, with nothing above it, and actions right-aligned to the title baseline.
+- **Detail pages** (a receipt, a new record, a month, a report): a 36px back button (white, 1px border, radius 8, arrow-left 18) then the parent page and the current page in one line at title size, "Inbox / Shell" (parent Sora 600 26 secondary and clickable, slash Sora 400 26 border-strong, current Sora 600 26 ink), gap 12 after the button and 10 between words. Previous and Next sit on the right with a caption under them (Sora 11 secondary, centred, gap 6): "Receipt 1 of 2 to check", "Receipt 4 of 5" or "Receipt 1 of 4 that need you". Previous is disabled on the first receipt and Next on the last. A new record has no Previous or Next. Header aligns items to the centre and is 55px tall with the pager, 36px without.
 - **Tables**: white, border default, radius 10. Header row #FAFAFB, Mono 10 uppercase secondary. Rows 47px, padding 8 16, column gap 20, row divider default. Columns for Inbox: checkbox 13, vendor 203, date 128, category 128, total 128, status 128, actions 136 (centred).
 - **Review layout**: document area (grey #EEF0F3 panel) left, fields panel 360 right.
 
@@ -109,7 +109,7 @@ Sora has no glyphs for ọ, ẹ or the grave accent. **Never type the product na
 - **Reports pages** the year (stats, monthly bars with the current month in ink, spend by category, the last four months), a month (split bar by person, reports as accordions) and one report (where every value came from, what was left out, which team rules were used). After submitting, the receipts leave the inbox and open read-only from the report.
 - **Report as a PDF** Download PDF prints one A4 page (794 by 1123 at 96 dpi, 57px margin): wordmark and workspace, an ink rule, title and who submitted it, a grey stats band, the receipts table with a total line, the left-out and team-rules notes, and a footer. The browser's print dialog saves it as a PDF.
 - **Search, empty and no results** before typing, a TRY group (Shell, Uber, Lekki office, Tunde Ade) and the Ask row; with no matches, every tab shows 0 and is disabled, one plain line says nothing matched, and the Ask row offers the search as a question.
-- **Record keeper answers** reading first (cobalt caret, "Reading 6 receipts in Kola & Co.", four skeleton lines), then the whole answer at once: overline (topic and period), the figure in Geist Mono 500 26, one line, the receipts behind it with marker strips, what was left out in a grey inset, then actions (Show in inbox, Review, Copy). A flagged total always starts with "Probably". Asked to act, it says it can't and points to the inbox. A question it can't answer gets one plain line and no figure.
+- **Record keeper answers** reading first (cobalt caret, "Reading 6 receipts in Kola & Co.", four skeleton lines), then the whole answer at once: the figure in Geist Mono 500 26, one line, the receipts behind it with marker strips, what was left out in a grey inset, then actions (Show in inbox, Review, Copy). A flagged total always starts with "Probably". Asked to act, it says it can't and points to the inbox. A question it can't answer gets one plain line and no figure.
 - **Inbox filter from a question** a chip with the assistant mark, "From your question: Transport, November" and a clear button, plus "Showing 2 of 6". Only what's on screen can be selected or approved.
 - **Learned rules** newest first, with who added it, when, how many receipts it filled in, See receipts (opens search for the vendor) and Remove (with Undo). Seeded rules: Total Energies is Fuel (Tunde), Spar is Groceries (Kemi), Jumia is Office supplies (Kemi).
 - **Settings** workspace name (renames it everywhere), currency, year start, people and roles, and how the AI behaves. Showing the reason for every flag, asking before saving a rule and the assistant's scope are locked on.
@@ -139,7 +139,7 @@ Lucide, 24px grid, 2px stroke, round caps and joins. Used at 14px in buttons, 15
 
 - Say what happened, then what to do. Plain words, no apology, no personality, no "I", no "Oops", no exclamation marks.
 - **No em dashes** anywhere (UI, docs, comments, commit messages).
-- Sentence case for everything except Mono overlines.
+- Sentence case for everything except Mono column headers and labels. No labels or overlines above titles.
 - Key strings: "6 receipts read", "2 need a quick look before you can approve them.", "Check this", "The rest look right.", "Found two totals. Used the one labelled Total.", "Edited by you", "Total changed to ₦145,725.00. Undo", "Use Transport for all Uber receipts?" (Yes, always / Just this one), "Category: Transport (your rule)", "Couldn't read this one. The photo is too blurry to pick out the text." (Upload again / Enter it myself), "Read 3 of 6 fields. Please fill in the rest.", "This doesn't look like a receipt or invoice.", "Looks like a copy of Shell, 12 Nov." (Keep both / Remove this one), "This is taking longer than usual. Your file is safe." (Try again), "Receipts with a flagged vendor, date or total stay out of bulk approval."
 
 ## Figma is the source of truth

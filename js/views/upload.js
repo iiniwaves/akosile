@@ -5,7 +5,6 @@ export function renderUpload(root, { onFiles }) {
   root.innerHTML = `
     <header class="page-head page-head--tall">
       <div class="page-head__title">
-        <span class="t-overline muted">November expenses</span>
         <h1 class="t-heading-lg">Inbox</h1>
       </div>
     </header>

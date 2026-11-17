@@ -22,7 +22,6 @@ export function renderRules(root, state, { onSee }) {
   root.innerHTML = `
     <header class="page-head">
       <div class="page-head__title">
-        <span class="t-overline muted">${escapeHtml(state.workspaceName)}</span>
         <h1 class="t-heading-lg t-heading-lg--plain">Learned rules</h1>
       </div>
     </header>

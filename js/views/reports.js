@@ -96,8 +96,7 @@ export function renderYear(root, state) {
   root.innerHTML = `
     <header class="page-head">
       <div class="page-head__title">
-        <span class="t-overline muted">Reports  ·  ${escapeHtml(state.workspaceName)}</span>
-        <h1 class="t-heading-lg t-heading-lg--tight">${YEAR}</h1>
+        <h1 class="t-heading-lg t-heading-lg--tight">Reports</h1>
       </div>
       <div class="page-head__actions page-head__actions--end">
         <div class="year-nav">
